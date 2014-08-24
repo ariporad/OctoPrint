@@ -165,7 +165,7 @@ default_settings = {
 			"repetierStyleTargetTemperature": False,
 			"extendedSdFileList": False
 		}
-	}
+	},
 	"filament": {
 		"enabled": True,
 		"filaments": [
@@ -180,6 +180,7 @@ default_settings = {
 			}
 		]
 	}
+}
 
 valid_boolean_trues = [True, "true", "yes", "y", "1"]
 
