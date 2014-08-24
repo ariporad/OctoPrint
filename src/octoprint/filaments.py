@@ -45,7 +45,7 @@ class FilamentManager(object):
 
 ##~~ FilebasedUserManager, takes available filament from filament.yaml file
 
-class FilebasedFilamentManager(UserManager):
+class FilebasedFilamentManager(FilamentManager):
 	def __init__(self):
 		FilamentManager.__init__(self)
 
@@ -53,11 +53,13 @@ class FilebasedFilamentManager(UserManager):
 		if filafile is None:
 			filafile = os.path.join(settings().settings_dir, "filament.yaml")
 		self._filafile = filafile
-		self._filaments = []
+		self._filaments = [Filament("0", "Ultimaker", "Octoprint Orange", "F60", "PLA", 180, "382", "1000")]
 		self._dirty = False
 
 		self._customized = None
 		self._load()
+		if self._filaments[0] is None:
+			self.addFilament("0", "Ultimaker", "Octoprint Orange", "F60", "PLA", 180, "382", "1000")
 
 	def _load(self):
 		if os.path.exists(self._filafile) and os.path.isfile(self._filafile):
@@ -134,7 +136,7 @@ class UnknownFilament(Exception):
 		Exception.__init__(self, "Unknown filament: %s" % filament)
 ##~~ User object
 
-class User(UserMixin):
+class Filament(UserMixin):
 	def __init__(self, id, supplier, name, color, type, temp, used, total):
 		self.id = id
 		self.supplier = supplier
@@ -156,9 +158,3 @@ class User(UserMixin):
 			"used": self.used,
 			"total": self.total
 		}
-
-##~~ DummyUser object to use when accessControl is disabled
-
-class DummyFilament(User):
-	def __init__(self):
-		Filament.__init__(self, "0", "Ultimaker", "Octoprint Orange", "F60", "PLA", 180, "382", "1000")

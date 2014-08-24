@@ -37,6 +37,7 @@ from octoprint.printer import Printer, getConnectionOptions
 from octoprint.settings import settings
 import octoprint.gcodefiles as gcodefiles
 import octoprint.users as users
+import octoprint.filaments as filaments
 import octoprint.events as events
 import octoprint.timelapse
 import octoprint._version
@@ -53,6 +54,7 @@ VERSION = octoprint._version.get_versions()['version']
 def index():
 	return render_template(
 		"index.jinja2",
+		filaments=filamentManager,
 		webcamStream=settings().get(["webcam", "stream"]),
 		enableTimelapse=(settings().get(["webcam", "snapshot"]) is not None and settings().get(["webcam", "ffmpeg"]) is not None),
 		enableGCodeVisualizer=settings().get(["gcodeViewer", "enabled"]),
@@ -115,6 +117,7 @@ class Server():
 		global printer
 		global gcodeManager
 		global userManager
+		global filamentManager
 		global eventManager
 		global loginManager
 		global debug
@@ -134,6 +137,7 @@ class Server():
 		logger.info("Starting OctoPrint (%s)" % VERSION)
 
 		eventManager = events.eventManager()
+		filamentManager = filaments.FilebasedFilamentManager()
 		gcodeManager = gcodefiles.GcodeManager()
 		printer = Printer(gcodeManager)
 
