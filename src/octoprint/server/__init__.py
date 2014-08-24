@@ -20,11 +20,12 @@ SUCCESS = {}
 NO_CONTENT = ("", 204)
 
 app = Flask("octoprint")
-debug = False
+debug = True
 
 printer = None
 gcodeManager = None
 userManager = None
+filamentManager = None
 eventManager = None
 loginManager = None
 
@@ -45,10 +46,8 @@ import octoprint.util
 
 from . import util
 
-
 UI_API_KEY = ''.join('%02X' % ord(z) for z in uuid.uuid4().bytes)
 VERSION = octoprint._version.get_versions()['version']
-
 
 @app.route("/")
 def index():
@@ -137,7 +136,7 @@ class Server():
 		logger.info("Starting OctoPrint (%s)" % VERSION)
 
 		eventManager = events.eventManager()
-		filamentManager = filaments.FilebasedFilamentManager()
+		filamentManager = filaments.FilamentManager()
 		gcodeManager = gcodefiles.GcodeManager()
 		printer = Printer(gcodeManager)
 

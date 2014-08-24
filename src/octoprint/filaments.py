@@ -11,44 +11,8 @@ import uuid
 
 from octoprint.settings import settings
 
-class FilamentManager(object):
-
-	def addUser(self, username, password, active, roles):
-		pass
-
-	def changeUserActivation(self, username, active):
-		pass
-
-	def changeUserRoles(self, username, roles):
-		pass
-
-	def addRolesToUser(self, username, roles):
-		pass
-
-	def removeRolesFromUser(self, username, roles):
-		pass
-
-	def changeUserPassword(self, username, password):
-		pass
-
-	def removeUser(self, username):
-		pass
-
-	def findUser(self, username=None):
-		return None
-
-	def getAllfilament(self):
-		return []
-
-	def hasBeenCustomized(self):
-		return False
-
-##~~ FilebasedUserManager, takes available filament from filament.yaml file
-
-class FilebasedFilamentManager(FilamentManager):
+class FilamentManager():
 	def __init__(self):
-		FilamentManager.__init__(self)
-
 		filafile = settings().get(["accessControl", "filafile"])
 		if filafile is None:
 			filafile = os.path.join(settings().settings_dir, "filament.yaml")
