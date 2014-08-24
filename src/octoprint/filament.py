@@ -37,39 +37,36 @@ class FilamentManager(object):
 	def findUser(self, username=None):
 		return None
 
-	def getAllUsers(self):
+	def getAllfilament(self):
 		return []
 
 	def hasBeenCustomized(self):
 		return False
 
-##~~ FilebasedUserManager, takes available users from users.yaml file
+##~~ FilebasedUserManager, takes available filament from filament.yaml file
 
 class FilebasedFilamentManager(UserManager):
 	def __init__(self):
 		FilamentManager.__init__(self)
 
-		filafile = settings().get(["accessControl", "userfile"])
-		if userfile is None:
-			userfile = os.path.join(settings().settings_dir, "users.yaml")
-		self._userfile = userfile
-		self._users = {}
+		filafile = settings().get(["accessControl", "filafile"])
+		if filafile is None:
+			filafile = os.path.join(settings().settings_dir, "filament.yaml")
+		self._filafile = filafile
+		self._filaments = []
 		self._dirty = False
 
 		self._customized = None
 		self._load()
 
 	def _load(self):
-		if os.path.exists(self._userfile) and os.path.isfile(self._userfile):
+		if os.path.exists(self._filafile) and os.path.isfile(self._filafile):
 			self._customized = True
-			with open(self._userfile, "r") as f:
+			with open(self._filafile, "r") as f:
 				data = yaml.safe_load(f)
-				for name in data.keys():
-					attributes = data[name]
-					apikey = None
-					if "apikey" in attributes:
-						apikey = attributes["apikey"]
-					self._users[name] = User(name, attributes["password"], attributes["active"], attributes["roles"], apikey)
+				for id in data.keys():
+					attributes[""] = data[id]
+					self._filament[id] = Filament(id, attributes["supplier"], attributes["name"], attributes["color"],  attributes["type"], attributes["temp"], attributes["used"], attributes["total"])
 		else:
 			self._customized = False
 
@@ -78,200 +75,90 @@ class FilebasedFilamentManager(UserManager):
 			return
 
 		data = {}
-		for name in self._users.keys():
-			user = self._users[name]
-			data[name] = {
-				"password": user._passwordHash,
-				"active": user._active,
-				"roles": user._roles,
-				"apikey": user._apikey
+		for id in self._filament.keys():
+			filament = self._filament[id]
+			data[id] = {
+				"supplier": filament.supplier,
+				"name": filament.name,
+				"color": filament.color,
+				"type": filament.type,
+				"temp": filament.temp,
+				"used": filament.used,
+				"total": filament.total,
 			}
 
-		with open(self._userfile, "wb") as f:
+		with open(self._filafile, "wb") as f:
 			yaml.safe_dump(data, f, default_flow_style=False, indent="    ", allow_unicode=True)
 			self._dirty = False
 		self._load()
 
-	def addUser(self, username, password, active=False, roles=["user"], apikey=None):
-		if username in self._users.keys():
-			raise UserAlreadyExists(username)
+	def addFilament(self, id, supplier, name, color, type, temp, used, total):
+		if id in self._filament.keys():
+			raise FilamentAlreadyExists(supplier + ": " + name + " " + type)
 
-		self._users[username] = User(username, UserManager.createPasswordHash(password), active, roles, apikey)
+		self._filament[id] = Filament(uid, supplier, name, color, type, temp, used, total)
 		self._dirty = True
 		self._save()
 
-	def changeUserActivation(self, username, active):
-		if not username in self._users.keys():
-			raise UnknownUser(username)
+	def removeUser(self, filament):
+		if not filament in self._filament.keys():
+			raise UnknownFilament(filament)
 
-		if self._users[username]._active != active:
-			self._users[username]._active = active
-			self._dirty = True
-			self._save()
-
-	def changeUserRoles(self, username, roles):
-		if not username in self._users.keys():
-			raise UnknownUser(username)
-
-		user = self._users[username]
-
-		removedRoles = set(user._roles) - set(roles)
-		self.removeRolesFromUser(username, removedRoles)
-
-		addedRoles = set(roles) - set(user._roles)
-		self.addRolesToUser(username, addedRoles)
-
-	def addRolesToUser(self, username, roles):
-		if not username in self._users.keys():
-			raise UnknownUser(username)
-
-		user = self._users[username]
-		for role in roles:
-			if not role in user._roles:
-				user._roles.append(role)
-				self._dirty = True
-		self._save()
-
-	def removeRolesFromUser(self, username, roles):
-		if not username in self._users.keys():
-			raise UnknownUser(username)
-
-		user = self._users[username]
-		for role in roles:
-			if role in user._roles:
-				user._roles.remove(role)
-				self._dirty = True
-		self._save()
-
-	def changeUserPassword(self, username, password):
-		if not username in self._users.keys():
-			raise UnknownUser(username)
-
-		passwordHash = UserManager.createPasswordHash(password)
-		user = self._users[username]
-		if user._passwordHash != passwordHash:
-			user._passwordHash = passwordHash
-			self._dirty = True
-			self._save()
-
-	def generateApiKey(self, username):
-		if not username in self._users.keys():
-			raise UnknownUser(username)
-
-		user = self._users[username]
-		user._apikey = ''.join('%02X' % ord(z) for z in uuid.uuid4().bytes)
-		self._dirty = True
-		self._save()
-		return user._apikey
-
-	def deleteApikey(self, username):
-		if not username in self._users.keys():
-			raise UnknownUser(username)
-
-		user = self._users[username]
-		user._apikey = None
+		del self._filament[filament]
 		self._dirty = True
 		self._save()
 
-	def removeUser(self, username):
-		if not username in self._users.keys():
-			raise UnknownUser(username)
-
-		del self._users[username]
-		self._dirty = True
-		self._save()
-
-	def findUser(self, username=None, apikey=None):
-		if username is not None:
-			if username not in self._users.keys():
+	def findUser(self, id=None):
+		if id is not None:
+			if id not in self._filament.keys():
 				return None
 
-			return self._users[username]
-		elif apikey is not None:
-			for user in self._users.values():
-				if apikey == user._apikey:
-					return user
-			return None
+			return self._filament[id]
 		else:
 			return None
 
-	def getAllUsers(self):
-		return map(lambda x: x.asDict(), self._users.values())
+	def getAllFilament(self):
+		return map(lambda x: x.asDict(), self._filament.values())
 
 	def hasBeenCustomized(self):
 		return self._customized
 
 ##~~ Exceptions
 
-class UserAlreadyExists(Exception):
-	def __init__(self, username):
-		Exception.__init__(self, "User %s already exists" % username)
+class FilamentAlreadyExists(Exception):
+	def __init__(self, filament):
+		Exception.__init__(self, "Filament %s already exists" % filament)
 
-class UnknownUser(Exception):
-	def __init__(self, username):
-		Exception.__init__(self, "Unknown user: %s" % username)
-
-class UnknownRole(Exception):
-	def _init_(self, role):
-		Exception.__init__(self, "Unknown role: %s" % role)
-
+class UnknownFilament(Exception):
+	def __init__(self, filament):
+		Exception.__init__(self, "Unknown filament: %s" % filament)
 ##~~ User object
 
 class User(UserMixin):
-	def __init__(self, username, passwordHash, active, roles, apikey=None):
-		self._username = username
-		self._passwordHash = passwordHash
-		self._active = active
-		self._roles = roles
-		self._apikey = apikey
+	def __init__(self, id, supplier, name, color, type, temp, used, total):
+		self.id = id
+		self.supplier = supplier
+		self.name = name
+		self.color = color
+		self.type = type
+		self.temp = temp
+		self.used = used
+		self.total = total
 
 	def asDict(self):
 		return {
-			"name": self._username,
-			"active": self.is_active(),
-			"admin": self.is_admin(),
-			"user": self.is_user(),
-			"apikey": self._apikey
+			"id": self.id,
+			"supplier": self.supplier,
+			"name": self.name,
+			"color": self.color,
+			"type": self.type,
+			"temp": self.temp,
+			"used": self.used,
+			"total": self.total
 		}
-
-	def check_password(self, passwordHash):
-		return self._passwordHash == passwordHash
-
-	def get_id(self):
-		return self._username
-
-	def get_name(self):
-		return self._username
-
-	def is_active(self):
-		return self._active
-
-	def is_user(self):
-		return "user" in self._roles
-
-	def is_admin(self):
-		return "admin" in self._roles
 
 ##~~ DummyUser object to use when accessControl is disabled
 
-class DummyUser(User):
+class DummyFilament(User):
 	def __init__(self):
-		User.__init__(self, "dummy", "", True, UserManager.valid_roles)
-
-	def check_password(self, passwordHash):
-		return True
-
-class DummyIdentity(Identity):
-	def __init__(self):
-		Identity.__init__(self, "dummy")
-
-def dummy_identity_loader():
-	return DummyIdentity()
-
-
-##~~ Apiuser object to use when api key is used to access the API
-
-
-class ApiUser(User):
-	def __init__(self):
-		User.__init__(self, "api", "", True, UserManager.valid_roles)
+		Filament.__init__(self, "0", "Ultimaker", "Octoprint Orange", "F60", "PLA", 180, "382", "1000")

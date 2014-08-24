@@ -626,17 +626,18 @@
                     <table class="table table-condensed table-hover" id="system_filament">
                         <thead>
                             <tr>
+                                <th class="settings_filament_id">ID</th>
                                 <th class="settings_filament_supplier">Supplier</th>
+                                <th class="settings_filament_name">Name</th>
                                 <th class="settings_filament_color">Color</th>
                                 <th class="settings_filament_type">Type</th>
                                 <th class="settings_filament_temp">Temp</th>
-                                <th class="settings_filament_used">Amount Used</th>
+                                <th class="settings_filament_size">Size</th>
                                 <th class="settings_filament_left">Amount Left</th>
                             </tr>
                         </thead>
                         <tbody data-bind="foreach: users.listHelper.paginatedItems">
                             <tr>
-                                <td class="settings_filament_supplier"><span data-bind="text: name"></span><span class="muted" data-bind="visible: $root.api_enabled() && apikey"><br /><small>Apikey: <span data-bind="text: apikey"></span></small></span></td>
                                 <td class="settings_users_active"><i data-bind="css: { 'icon-check': active, 'icon-check-empty': !active }"></i></td>
                                 <td class="settings_users_admin"><i data-bind="css: { 'icon-check': admin, 'icon-check-empty': !admin }"></i></td>
                                 <td class="settings_users_actions" class="system_users_action">

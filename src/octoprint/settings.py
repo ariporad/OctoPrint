@@ -166,7 +166,20 @@ default_settings = {
 			"extendedSdFileList": False
 		}
 	}
-	"filament":
+	"filament": {
+		"enabled": True,
+		"filaments": [
+			{
+				"supplier": "G-Tech",
+				"color": "00C",
+				"name": "Blue",
+				"type": "PLA",
+				"temp": 180,
+				"used": "100",
+				"total": "1000"
+			}
+		]
+	}
 
 valid_boolean_trues = [True, "true", "yes", "y", "1"]
 
