@@ -166,7 +166,7 @@ default_settings = {
 			"extendedSdFileList": False
 		}
 	}
-}
+	"filament":
 
 valid_boolean_trues = [True, "true", "yes", "y", "1"]
 
